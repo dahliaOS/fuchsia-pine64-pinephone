@@ -81,6 +81,7 @@ if (current_toolchain == default_toolchain) {
       "arch.cc",
       "debugger.cc",
       "exceptions_c.cc",
+      "hacks.cc",
       "mmu.cc",
       "mp.cc",
       "perf_mon.cc",
