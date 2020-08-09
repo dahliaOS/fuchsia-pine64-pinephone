@@ -35,7 +35,7 @@ static inline uint arch_spin_lock_holder_cpu(const arch_spin_lock_t* lock) {
 }
 
 static inline bool arch_spin_lock_held(arch_spin_lock_t* lock) {
-  return *lock != 0;
+  return lock->value != 0;
 }
 
 enum {

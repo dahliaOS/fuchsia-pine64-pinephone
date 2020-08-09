@@ -13,11 +13,26 @@
 // annotations cause Clang to detect violations.
 
 void arch_spin_lock(arch_spin_lock_t* lock) TA_NO_THREAD_SAFETY_ANALYSIS {
+    while (1) {
+        if (lock->value) continue;
+        if (arch_spin_trylock(lock)) break;
+    }
 }
 
 int arch_spin_trylock(arch_spin_lock_t* lock) TA_NO_THREAD_SAFETY_ANALYSIS {
-    return 0;
+    int tmp = 1, busy;
+
+    __asm__ __volatile__(
+        "   amoswap.w %0, %2, %1\n"
+        "   fence r , rw\n"
+        : "=r"(busy), "+A"(lock->value)
+        : "r" (tmp)
+        : "memory"
+    );
+
+    return !busy;
 }
 
 void arch_spin_unlock(arch_spin_lock_t* lock) TA_NO_THREAD_SAFETY_ANALYSIS {
+    lock->value = 0;
 }
