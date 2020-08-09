@@ -53,6 +53,17 @@ class RiscvArchVmAspace final : public ArchVmAspaceInterface {
   void arch_set_asid(uint16_t asid) { }
 
   static void ContextSwitch(RiscvArchVmAspace* from, RiscvArchVmAspace* to);
+
+private:
+  // Pointer to the translation table.
+  paddr_t pt_phys_ = 0;
+  volatile pte_t* pt_virt_ = nullptr;
+
+  uint flags_ = 0;
+
+  // Range of address space.
+  vaddr_t base_ = 0;
+  size_t size_ = 0;
 };
 
 using ArchVmAspace = RiscvArchVmAspace;
