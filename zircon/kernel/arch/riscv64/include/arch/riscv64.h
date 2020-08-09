@@ -122,6 +122,8 @@ __END_CDECLS
     __val; \
 })
 
+extern "C" void riscv64_exception_entry(void);
+
 #endif  // __ASSEMBLER__
 
 #endif  // ZIRCON_KERNEL_ARCH_RISCV64_INCLUDE_ARCH_RISCV64_H_
