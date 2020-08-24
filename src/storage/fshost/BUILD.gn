@@ -108,6 +108,7 @@ source_set("block-watcher") {
     "fshost-fs-provider.cc",
     "pkgfs-launcher.cc",
     "pkgfs-loader-service.cc",
+    "verified-volume.cc",
   ]
   public_deps = [
     ":fshost-registry",
@@ -132,6 +133,7 @@ source_set("block-watcher") {
     "//sdk/fidl/fuchsia.hardware.block:fuchsia.hardware.block_c",
     "//sdk/fidl/fuchsia.hardware.block.encrypted:fuchsia.hardware.block.encrypted_c",
     "//sdk/fidl/fuchsia.hardware.block.partition:fuchsia.hardware.block.partition_c",
+    "//sdk/fidl/fuchsia.hardware.block.verified:fuchsia.hardware.block.verified_llcpp",
     "//sdk/lib/fdio",
     "//src/lib/loader_service",
     "//src/security/zxcrypt:zxcrypt-fdio",
@@ -145,6 +147,7 @@ source_set("block-watcher") {
     "//zircon/system/ulib/fs-management",
     "//zircon/system/ulib/gpt",
     "//zircon/system/ulib/minfs",
+    "//zircon/system/ulib/ramdevice-client",
     "//zircon/system/ulib/trace",
     "//zircon/system/ulib/trace-engine",
   ]

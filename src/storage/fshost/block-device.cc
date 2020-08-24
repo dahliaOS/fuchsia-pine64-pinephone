@@ -91,6 +91,17 @@ int UnsealZxcryptThread(void* arg) {
   return 0;
 }
 
+int OpenVerityDeviceThread(void* arg) {
+  std::unique_ptr<int> fd_ptr(static_cast<int*>(arg));
+  fbl::unique_fd fd(*fd_ptr);
+  fbl::unique_fd devfs_root(open("/dev", O_RDONLY));
+  // TODO: fetch boot args, see if there's a seal in there, parse it, and if so, do
+  // something
+  //VerifiedVolume volume(std::move(fd), std::move(devfs_root), std::move(seal));
+  //volume.OpenForVerifiedRead(zx::sec(5));
+  return 0;
+}
+
 }  // namespace
 
 BlockDevice::BlockDevice(FilesystemMounter* mounter, fbl::unique_fd fd)
@@ -167,6 +178,12 @@ zx_status_t BlockDevice::UnsealZxcrypt() {
     thrd_detach(th);
   }
   return ZX_OK;
+}
+
+zx_status_t BlockDevice::OpenBlockVerityInVerifiedRead() {
+  printf("fshost: opening block-verity for verified read\n");
+  // TODO: spawn OpenVerityDeviceThread thread
+
 }
 
 zx_status_t BlockDevice::IsTopologicalPathSuffix(const std::string_view& expected_path,
@@ -427,9 +444,17 @@ zx_status_t BlockDeviceInterface::Add() {
       return AttachDriver(kMBRDriverPath);
     }
     case DISK_FORMAT_BLOCK_VERITY: {
-      // TODO(fxbug.dev/55936): this should launch a thread to call OpenForVerifiedRead when the
-      // verity device is available. It should only launch that thread if we are not in FCT mode.
-      return AttachDriver(kBlockVerityDriverPath);
+      zx_status_t rc = AttachDriver(kBlockVerityDriverPath);
+      if (rc != ZX_OK) {
+        return rc;
+      }
+
+      bool in_fct_mode;
+      // TODO: populate this boolean by looking for /boot/config/fct, once we've
+      // set that up
+      if (!in_fct_mode) {
+        return OpenBlockVerityInVerifiedRead();
+      }
     }
     case DISK_FORMAT_ZXCRYPT: {
       if (!Netbooting()) {
@@ -536,7 +561,18 @@ zx_status_t BlockDeviceInterface::Add() {
           return ZX_ERR_NOT_SUPPORTED;
         }
         if (is_already_bound) {
-          // the factory service takes care of this block device
+          // This is the child device of a block device that already has the
+          // verity driver bound.  Don't bind, lest we cause a second layer of indirection!
+          return ZX_OK;
+        }
+
+        if (IsTopologicalPathSuffix(std::string_view("/verified/block"), &is_already_bound) !=
+            ZX_OK) {
+          return ZX_ERR_NOT_SUPPORTED;
+        }
+        if (is_already_bound) {
+          // This is the child device of a block device that already has the
+          // verity driver bound.  Don't bind, lest we cause a second layer of indirection!
           return ZX_OK;
         }
 
