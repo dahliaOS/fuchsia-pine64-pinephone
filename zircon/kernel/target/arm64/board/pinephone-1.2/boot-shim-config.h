@@ -29,13 +29,16 @@ static const zbi_mem_range_t mem_config[] = {
 };
 
 static const dcfg_simple_t uart_driver = {
-    .mmio_phys = 0xfff32000,
+    .mmio_phys = 0x01C28000,
     .irq = 33,
 };
 
-
-
-//put gicv3_driver here
+static const dcfg_arm_gicv2_driver_t gicv2_driver = {
+    .mmio_phys = 0x01c81000,
+    .gicd_offset = 0x1000,
+    .gicc_offset = 0x2000,
+    .ipi_base = 9,
+};
 
 static const dcfg_arm_psci_driver_t psci_driver = {
     .use_hvc = false,
